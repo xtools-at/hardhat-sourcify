@@ -1,12 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
-// import chalk from "chalk";
 import FormData from "form-data";
-import fs from "fs-extra";
-// import hre from "hardhat";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { getFullyQualifiedName } from "hardhat/utils/contract-names";
-// import path from "path";
 import { Readable } from "stream";
 
 function log(...args: any[]) {
@@ -14,17 +10,14 @@ function log(...args: any[]) {
 }
 
 function logError(...args: any[]) {
-  // console.log(chalk.red(...args));
   console.log(...args);
 }
 
 function logInfo(...args: any[]) {
-  // console.log(chalk.yellow(...args));
   console.log(...args);
 }
 
 function logSuccess(...args: any[]) {
-  // console.log(chalk.green(...args));
   console.log(...args);
 }
 
@@ -36,7 +29,6 @@ function ensureTrailingSlash(s: string): string {
   return s;
 }
 
-// const defaultEndpoint = 'https://server.verificationstaging.shardlabs.io/';
 const defaultEndpoint = "https://sourcify.dev/server/";
 
 export async function submitSourcesToSourcify(
@@ -46,18 +38,14 @@ export async function submitSourcesToSourcify(
     sourceName: string; // path ./contracts/Greeter.sol
     contractName: string; // name Greeter
     address: string;
-    chainId: number;
-
-    // address
-    // writeFailingMetadata?: boolean;
+    chainId?: number;
   }
 ): Promise<void> {
   config = config || {};
   //   get chainId
-  const chainId = config.chainId;
+  const chainId = config.chainId || hre.network.config.chainId;
+  log(`Verifying source code for contract "${config.contractName}" deployed to [${config.address}] on chain id [${chainId}]...`)
 
-  //   const chainId = await hre.getChainId();
-  //   const all = await hre.deployments.all();
   const url = config.endpoint
     ? ensureTrailingSlash(config.endpoint)
     : defaultEndpoint;
@@ -73,13 +61,13 @@ export async function submitSourcesToSourcify(
     /// get contract index from output of buildinfo
     let index;
     if (buildinfo) {
-      // index = getObjectKeyIndex(buildinfo.output.contracts, config.sourceName)
       index = Object.keys(buildinfo.output.contracts).indexOf(
         config.sourceName
       );
-      console.log("chosen contract", index);
     } else {
       // throw error
+      logError("Contract not found");
+      return
     }
     const address = config.address;
     const metadataString = JSON.stringify(buildinfo);
@@ -126,17 +114,9 @@ export async function submitSourcesToSourcify(
       if (submissionResponse.data.result[0].status === "perfect") {
         logSuccess(` => contract ${name} is now verified`);
       } else {
-        logError(` => contract ${name} is not verified`);
+        logError(` => contract ${name} is not verified, status = ${submissionResponse.data.result[0].status}`);
       }
     } catch (e) {
-      //   if (config && config.writeFailingMetadata) {
-      //     const failingMetadataFolder = path.join('failing_metadata', "3");
-      //     fs.ensureDirSync(failingMetadataFolder);
-      //     fs.writeFileSync(
-      //       path.join(failingMetadataFolder, `${name}_at_${address}.json`),
-      //       metadataString
-      //     );
-      //   }
       logError(
         ((e as any).response && JSON.stringify((e as any).response.data)) || e
       );
@@ -146,16 +126,6 @@ export async function submitSourcesToSourcify(
   if (config.contractName) {
     await submit(config.contractName);
   } else {
-    // todo:
+    logError("Error: contract name not specified");
   }
 }
-// submitSourcesToSourcify(hre, {
-
-//     sourceName: "contracts/Greeter.sol", //path ./contracts/Greeter.sol
-//     address: "0x122345454646456546654",
-//     contractName: "Greeter",
-//     chainId: 3
-// }).catch((error) => {
-//     console.error(error);
-//     process.exitCode = 1;
-// });

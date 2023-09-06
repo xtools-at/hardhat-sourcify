@@ -1,37 +1,65 @@
 # hardhat-sourcify
-I just want to be able to use sourcify, don't want to use it with hardhat-deploy stuff,
-So I modified it to make it works solely with hardhat buildInfo file
+verify contracts with sourcify using hardhat
 
-rightnow it's a simple version works for single contract.
-
-plan to improve it to:
- 
-    1. simplify the inputs
-    2. support verify multiple contracts 
-
-## usage
-task name `sourcify` is already used by hardhat-deploy  :/ 
-
-so I have to change to a new task name. may change to a simpler task name if i can come up with one :D
-
-Install it with 
-```
-yarn add -D hardhat-sourcify 
+## Usage
+- install plugin
+```shell
+yarn add -D @xtools-at/hardhat-sourcify
 ```
 
-example:
+- import plugin in `hardhat.config`
+```typescript
+import "@xtools-at/hardhat-sourcify";
 ```
-yarn hardhat sourcifySubmit --contract-name "Greeter" --source-name "contracts/Greeter.sol" --address 0xxxxxxxxx --chain-id 3
+
+- verify contract
+```shell
+yarn hardhat --network beam-testnet verify-sourcify --contract-name "WETH" --source-name "contracts/WETH.sol" --address 0x123456
 ```
 
-use `yarn hardhat help sourcifySubmit` to see the help for the task
+  - instead of using the `--network` param, you can pass in e.g. `--chain-id 13337` directly.
+```shell
+yarn hardhat verify-sourcify --contract-name "WETH" --source-name "contracts/WETH.sol" --address 0x123456 --chain-id 13337
+```
 
-## history
+- CLI help
+```shell
+yarn hardhat help verify-sourcify
+```
 
-**0.0.2**
+## Build and publish lib
 
-- fix TypeScript issues https://github.com/microsoft/TypeScript/issues/51567
+- sign up and get access token from [npmjs](https://npmjs.com)
 
-**0.0.1**
+### via Github actions
 
-- first version
+- add `NPM_TOKEN` to _Github actions_ secrets
+- add annotated tag to branch:
+```shell
+git tag -a v0.1.2 -m "release 0.1.2"
+```
+
+- push all tags
+```shell
+git push --follow-tags
+```
+
+### manually
+
+- use NodeJS v16+
+- install repo dependencies using `npm i` (_not_ yarn)
+- build
+```shell
+npm run build
+```
+
+- publish to npm
+```shell
+NPM_TOKEN=yourNpmAccessToken npm publish --access public
+```
+
+## History
+
+**0.1.0**
+
+- fork of [zoey-t's hardhat-sourcify](https://github.com/zoey-t/hardhat-sourcify) including prebuilt package and published latest version to npm
