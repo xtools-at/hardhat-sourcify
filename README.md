@@ -1,27 +1,23 @@
 # hardhat-sourcify
-verify contracts with sourcify using hardhat
+Verify contracts with Sourcify using Hardhat.
 
 ## Usage
 - install plugin
 ```shell
 yarn add -D @xtools-at/hardhat-sourcify
 ```
-
 - import plugin in `hardhat.config`
 ```typescript
 import "@xtools-at/hardhat-sourcify";
 ```
-
 - verify contract
 ```shell
 yarn hardhat --network beam-testnet verify-sourcify --contract-name "WETH" --source-name "contracts/WETH.sol" --address 0x123456
 ```
-
   - instead of using the `--network` param, you can pass in e.g. `--chain-id 13337` directly.
 ```shell
 yarn hardhat verify-sourcify --contract-name "WETH" --source-name "contracts/WETH.sol" --address 0x123456 --chain-id 13337
 ```
-
 - CLI help
 ```shell
 yarn hardhat help verify-sourcify
@@ -38,7 +34,6 @@ yarn hardhat help verify-sourcify
 ```shell
 git tag -a v0.1.2 -m "release 0.1.2"
 ```
-
 - push all tags
 ```shell
 git push --follow-tags
@@ -52,7 +47,6 @@ git push --follow-tags
 ```shell
 npm run build
 ```
-
 - publish to npm
 ```shell
 NPM_TOKEN=yourNpmAccessToken npm publish --access public
