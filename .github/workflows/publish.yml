@@ -11,11 +11,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Create Release
-        uses: elgohr/Github-Release-Action@v4
+        id: create_release
+        uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          title: ${{ github.ref }}
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
 
   publish:
     runs-on: ubuntu-latest
