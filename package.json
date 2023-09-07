@@ -1,6 +1,6 @@
 {
   "name": "@xtools-at/hardhat-sourcify",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Fork of Sourcify contract verification plugin for Hardhat",
   "repository": "https://github.com/xtools-at/hardhat-sourcify",
   "author": "xtools-at",
