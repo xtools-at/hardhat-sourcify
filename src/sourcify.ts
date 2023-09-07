@@ -111,15 +111,17 @@ export async function submitSourcesToSourcify(
       const submissionResponse = await axios.post(url, formData, {
         headers: formData.getHeaders(),
       });
-      if (submissionResponse.data.result[0].status === "perfect") {
-        logSuccess(` => SUCCESS: contract ${name} is now verified`);
+      const result = submissionResponse.data.result[0];
+      const status = result.status;
+      if (status === "perfect" || status === "partial") {
+        logSuccess(` => SUCCESS: contract ${name} is now verified, verification status = ${status}`);
       } else {
-        logError(` => ERROR: contract ${name} is NOT verified, result = ${JSON.stringify(submissionResponse.data.result[0], null, 2)}`);
+        logError(` => ERROR: contract ${name} is NOT verified, result = ${JSON.stringify(result, null, 2)}`);
       }
     } catch (e) {
       logError(` => ERROR: contract ${name} is NOT verified`);
       logError(
-        ((e as any).response && JSON.stringify((e as any).response.data)) || e
+        ((e as any).response && JSON.stringify((e as any).response.data, null, 2)) || e
       );
     }
   }

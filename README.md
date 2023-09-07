@@ -32,6 +32,7 @@ npx hardhat help verify-sourcify
 ### via Github actions
 
 - add `NPM_TOKEN` to _Github actions_ secrets
+- create a Github access token and add it to the secrets as `RELEASE_TOKEN`
 - add annotated tag to branch:
 ```shell
 git tag -a v0.1.2 -m "release 0.1.2"
@@ -56,7 +57,7 @@ NPM_TOKEN=yourNpmAccessToken npm publish --access public
 
 ## History
 
-**0.1.2**
+**0.1.3**
 
 - fixed minor build issue with yarn, improved log messages
 
