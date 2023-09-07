@@ -112,11 +112,12 @@ export async function submitSourcesToSourcify(
         headers: formData.getHeaders(),
       });
       if (submissionResponse.data.result[0].status === "perfect") {
-        logSuccess(` => contract ${name} is now verified`);
+        logSuccess(` => SUCCESS: contract ${name} is now verified`);
       } else {
-        logError(` => contract ${name} is not verified, status = ${submissionResponse.data.result[0].status}`);
+        logError(` => ERROR: contract ${name} is NOT verified, result = ${JSON.stringify(submissionResponse.data.result[0], null, 2)}`);
       }
     } catch (e) {
+      logError(` => ERROR: contract ${name} is NOT verified`);
       logError(
         ((e as any).response && JSON.stringify((e as any).response.data)) || e
       );

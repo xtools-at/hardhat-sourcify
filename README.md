@@ -56,6 +56,10 @@ NPM_TOKEN=yourNpmAccessToken npm publish --access public
 
 ## History
 
+**0.1.2**
+
+- fixed minor build issue with yarn, improved log messages
+
 **0.1.0**
 
 - fork of [zoey-t's hardhat-sourcify](https://github.com/zoey-t/hardhat-sourcify) including prebuilt package and published latest version to npm
