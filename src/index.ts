@@ -7,23 +7,23 @@ import { submitSourcesToSourcify } from "./sourcify";
 import "./type-extensions";
 
 task("verify-sourcify", "verify contract using sourcify")
-  .addOptionalParam(
-    "endpoint",
-    "endpoint url for sourcify",
-    undefined,
-    types.string
-  )
-  .addParam("sourceName", "e.g contract/Greeter.sol", undefined, types.string)
+  .addParam("sourceName", "Path to contract, e.g contract/Greeter.sol", undefined, types.string)
   .addParam(
     "contractName",
-    "Name of the contract you want to verify",
+    "Name of the contract you want to verify (e.g. Greeter)",
     undefined,
     types.string
   )
   .addParam("address", "address of the contract", undefined, types.string)
   .addOptionalParam(
     "chainId",
-    "the chainId of the network that your contract deployed on",
+    "The chainId of the network that your contract deployed on, if `--network` isn't used",
+    undefined,
+    types.string
+  )
+  .addOptionalParam(
+    "endpoint",
+    "Endpoint url for Sourcify",
     undefined,
     types.string
   )
