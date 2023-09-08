@@ -5,84 +5,115 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { getFullyQualifiedName } from "hardhat/utils/contract-names";
 import { Readable } from "stream";
 
+const DEFAULT_ENDPOINT = "https://sourcify.dev/server/";
+
 function log(...args: any[]) {
   console.log(...args);
 }
 
 function logError(...args: any[]) {
-  console.log(...args);
-}
-
-function logInfo(...args: any[]) {
-  console.log(...args);
-}
-
-function logSuccess(...args: any[]) {
-  console.log(...args);
+  console.error("ERROR: ", ...args);
 }
 
 function ensureTrailingSlash(s: string): string {
-  const lastChar = s.substr(-1);
-  if (lastChar !== "/") {
-    s = s + "/";
+  if (s.endsWith("/")) {
+    s += "/";
   }
   return s;
 }
 
-const defaultEndpoint = "https://sourcify.dev/server/";
+function inferFullyQualifiedName(
+  contractName: string,
+  fullPath?: string,
+  path?: string
+) {
+  let source = '';
+  if (fullPath) {
+    source = fullPath;
+  } else {
+    source = `contracts/${path || ''}`;
+    if (!source.endsWith(".sol")) {
+      source += `${source.endsWith("/") ? "" : "/"}${contractName}.sol`;
+    }
+  }
+
+  return {
+    fullName: getFullyQualifiedName(source, contractName),
+    sourceName: source,
+  };
+}
 
 export async function submitSourcesToSourcify(
   hre: HardhatRuntimeEnvironment,
   config: {
-    endpoint?: string;
-    sourceName: string; // path ./contracts/Greeter.sol
-    contractName: string; // name Greeter
+    contract?: string; // name, `Greeter`
     address: string;
+    path?: string; // partial path, e.g. `extensions` for contracts/extensions/Greeter.sol
+    fullPath?: string; // full path, e.g. `contracts-foo/Greeter.sol`
     chainId?: number;
+    endpoint?: string;
+    contractName?: string, // legacy
+    sourceName?: string, // legacy
   }
 ): Promise<void> {
   config = config || {};
-  //   get chainId
+  // get config
   const chainId = config.chainId || hre.network.config.chainId;
-  log(`Verifying source code for contract "${config.contractName}" deployed to [${config.address}] on chain id [${chainId}]...`)
+  let { contract, fullPath, path, address } = config;
+
+  // legacy fallback
+  if (config.contractName) {
+    contract = config.contractName;
+  }
+  if (config.sourceName) {
+    fullPath = config.sourceName;
+  }
+
+  if (!contract) {
+    logError("Please pass in the name of your contract using the `contract` parameter");
+    return;
+  }
 
   const url = config.endpoint
     ? ensureTrailingSlash(config.endpoint)
-    : defaultEndpoint;
+    : DEFAULT_ENDPOINT;
 
-  async function submit(name: string) {
-    // get chosenContract index
-    /// get chosenContract (contract index in hardhat metadata file)
-    const fullyQualifiedName = getFullyQualifiedName(
-      config.sourceName,
-      config.contractName
-    );
-    const buildinfo = await hre.artifacts.getBuildInfo(fullyQualifiedName);
-    /// get contract index from output of buildinfo
+  if ((path && fullPath) ) {
+    logError("Please use either the `path` or the `full-path` parameter");
+    return;
+  }
+
+  const { fullName, sourceName } = inferFullyQualifiedName(contract, fullPath, path);
+
+  log(`Verifying source code for contract "${contract}" located at [${sourceName}], deployed to [${address}] on chain id [${chainId}]...`)
+
+
+  async function submit() {
+    // get chosenContract (contract index in hardhat metadata file)
+    const buildInfo = await hre.artifacts.getBuildInfo(fullName);
+    // get contract index from output of build info
     let index;
-    if (buildinfo) {
-      index = Object.keys(buildinfo.output.contracts).indexOf(
-        config.sourceName
-      );
+    if (buildInfo) {
+      index = Object.keys(buildInfo.output.contracts).indexOf(sourceName);
     } else {
       // throw error
       logError("Contract not found");
       return
     }
-    const address = config.address;
-    const metadataString = JSON.stringify(buildinfo);
+
+    const metadataString = JSON.stringify(buildInfo);
 
     try {
       const checkResponse = await axios.get(
         `${url}checkByAddresses?addresses=${address.toLowerCase()}&chainIds=${chainId}`
       );
       const { data: checkData } = checkResponse;
-      console.log(checkData[0].status);
-      if (checkData[0].status === "perfect") {
-        log(`already verified: ${name} (${address}), skipping.`);
+      if (checkData[0].status === "perfect" || checkData[0].status === "partial") {
+        log(`Already verified: "${contract}" [${address}], skipping. Status = ${checkData[0].status}`);
         return;
       }
     } catch (e) {
+      logError("Verification status check failed");
       logError(
         ((e as any).response && JSON.stringify((e as any).response.data)) || e
       );
@@ -90,12 +121,10 @@ export async function submitSourcesToSourcify(
 
     if (!metadataString) {
       logError(
-        `Contract ${name} was deployed without saving metadata. Cannot submit to sourcify, skipping.`
+        `Contract ${contract} was deployed without saving metadata. Cannot submit to sourcify, skipping.`
       );
       return;
     }
-
-    logInfo(`verifying ${name} (${address} on chain ${chainId}) ...`);
 
     const formData = new FormData();
     formData.append("address", address);
@@ -114,21 +143,17 @@ export async function submitSourcesToSourcify(
       const result = submissionResponse.data.result[0];
       const status = result.status;
       if (status === "perfect" || status === "partial") {
-        logSuccess(` => SUCCESS: contract ${name} is now verified, verification status = ${status}`);
+        log(`SUCCESS:  => contract ${contract} is now verified, verification status = ${status}`);
       } else {
-        logError(` => ERROR: contract ${name} is NOT verified, result = ${JSON.stringify(result, null, 2)}`);
+        logError(` => contract ${contract} is NOT verified, result = ${JSON.stringify(result, null, 2)}`);
       }
     } catch (e) {
-      logError(` => ERROR: contract ${name} is NOT verified`);
+      logError(` => contract ${contract} is NOT verified`);
       logError(
         ((e as any).response && JSON.stringify((e as any).response.data, null, 2)) || e
       );
     }
   }
 
-  if (config.contractName) {
-    await submit(config.contractName);
-  } else {
-    logError("Error: contract name not specified");
-  }
+  await submit();
 }

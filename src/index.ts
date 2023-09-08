@@ -7,14 +7,30 @@ import { submitSourcesToSourcify } from "./sourcify";
 import "./type-extensions";
 
 task("verify-sourcify", "verify contract using sourcify")
-  .addParam("sourceName", "Path to contract, e.g contract/Greeter.sol", undefined, types.string)
-  .addParam(
-    "contractName",
-    "Name of the contract you want to verify (e.g. Greeter)",
+  .addOptionalParam(
+    "contract",
+    "Name of the contract you want to verify (e.g. `Greeter`)",
     undefined,
     types.string
   )
-  .addParam("address", "address of the contract", undefined, types.string)
+  .addParam(
+    "address",
+    "Address of the contract",
+    undefined,
+    types.string
+  )
+  .addOptionalParam(
+    "path",
+    "Path to contract in default contract folder, e.g `extensions/Foo.sol` or `extensions` (for 'contracts/extensions/Greeter.sol'). Can be omitted if filename is the same as `contractName`, and file isn't in a subfolder. ",
+    undefined,
+    types.string
+  )
+  .addOptionalParam(
+    "fullPath",
+    "Full relative path to contract, e.g `contracts-custom/Greeter.sol`. Overrides `path` completely",
+    undefined,
+    types.string
+  )
   .addOptionalParam(
     "chainId",
     "The chainId of the network that your contract deployed on, if `--network` isn't used",
@@ -27,16 +43,32 @@ task("verify-sourcify", "verify contract using sourcify")
     undefined,
     types.string
   )
+  .addOptionalParam(
+    "contractName",
+    "Legacy param for `contract`, do not use",
+    undefined,
+    types.string
+  )
+  .addOptionalParam(
+    "sourceName",
+    "Legacy param for `full-path`, do not use",
+    undefined,
+    types.string
+  )
   .setAction(async (args, hre) => {
-    // compile contract first
-    const { endpoint, sourceName, contractName, address, chainId } = args;
+    // compile contracts first
     await hre.run("compile");
+
+    const { endpoint, fullPath, path, contract, address, chainId, contractName, sourceName } = args;
     await submitSourcesToSourcify(hre, {
-      endpoint,
-      sourceName,
-      contractName,
+      contract,
       address,
+      path,
+      fullPath,
       chainId,
+      endpoint,
+      contractName,
+      sourceName,
     }).catch((error) => {
       console.error(error);
       process.exitCode = 1;
