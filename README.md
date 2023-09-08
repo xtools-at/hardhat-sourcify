@@ -36,9 +36,9 @@ npx hardhat --network beam verify-sourcify --contract "NFT" --path "extensions" 
 ```shell
 npx hardhat --network beam verify-sourcify --contract "NFT" --path "extensions/OtherFilename.sol" --address 0x12345...
 ```
-- verify contract `NFT` in `contracts-custom42/extensions/OtherFilename.sol`:
+- verify contract `NFT` in `contracts-custom42/extensions/NFT.sol`:
 ```shell
-npx hardhat --network beam verify-sourcify --contract "NFT" --full-path "contracts-custom42/extensions/OtherFilename.sol" --address 0x12345...
+npx hardhat --network beam verify-sourcify --contract "NFT" --full-path "contracts-custom42/extensions/NFT.sol" --address 0x12345...
 ```
 
 ## Build and publish lib
@@ -56,7 +56,7 @@ git tag -a v0.2.0 -m "release 0.2.0"
 ```
 - push all tags
 ```shell
-git push --follow-tags
+git push origin master --follow-tags
 ```
 
 ### manually
