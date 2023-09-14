@@ -1,4 +1,5 @@
 /dist
+.npmrc
 
 # Logs
 logs

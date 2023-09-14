@@ -63,14 +63,20 @@ git push origin master --follow-tags
 
 - install Node.js v16+
 - install repo dependencies using `npm i` (_not_ yarn)
+- add a `.npmrc` file to the project root, with the following contents:
+```
+//registry.npmjs.org/:_authToken=YourNpmAccessTokenGoesHere
+registry=https://registry.npmjs.org/
+```
+
 - bump the package version in `package.json`
-- build
+- build the package
 ```shell
 npm run build
 ```
 - publish to npm
 ```shell
-NPM_TOKEN=yourNpmAccessToken npm publish --access public
+npm publish --access public
 ```
 
 ## History
